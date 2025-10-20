@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modular_nn_lib_lucas_carneiro" # Troque pelo seu nome
+version = "0.0.1"
+authors = [ { name="Lucas Carneiro", email="lucascarneiromalta@outlook.com" }, ]
+description = "Implementação modular de uma rede neural com backpropagation."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "numpy"
+]
