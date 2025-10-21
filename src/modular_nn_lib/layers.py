@@ -15,7 +15,7 @@ class DenseLayer(Layer):
         self.activation = activation
         # TODO: Inicializar pesos e bias (ex: com np.random.randn)
         self.weights = np.random.randn(input_size, output_size) * 0.01
-        self.bias = np.zeros((1, output_size))
+        self.bias = np.full((1, output_size), 0.01)
     
     def forward(self, input_data):
         self.input = input_data
@@ -27,15 +27,17 @@ class DenseLayer(Layer):
     def backward(self, output_gradient, optimizer):
         # TODO: Aplicar a derivada da função de ativação
         activation_gradient = self.activation.backward(output_gradient)
+
+        # Calcule os gradientes MÉDIOS dividindo pelo N (tamanho do batch)        
+        n_samples = len(self.input)
         
-        # TODO: Calcular os gradientes para pesos e bias
-        self.grad_weights = np.dot(self.input.T, activation_gradient)
-        self.grad_bias = np.sum(activation_gradient, axis=0, keepdims=True)
+        self.grad_weights = np.dot(self.input.T, activation_gradient) / n_samples
+        self.grad_bias = np.mean(activation_gradient, axis=0, keepdims=True)
         
         # TODO: Calcular o gradiente a ser passado para a camada anterior
         input_gradient = np.dot(activation_gradient, self.weights.T)
         
         # TODO: Usar o otimizador para atualizar os pesos
         optimizer.update_params(self)
-        
+
         return input_gradient

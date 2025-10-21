@@ -1,6 +1,5 @@
 import numpy as np
 
-# A classe principal que gerencia a rede
 class NeuralNetwork:
     def __init__(self, loss: 'Loss', optimizer: 'Optimizer'):
         self.layers = []
@@ -16,45 +15,68 @@ class NeuralNetwork:
             output = layer.forward(output)
         return output
 
-    def train(self, X_train, y_train, epochs):
-        history = [] # Para guardar o histórico da perda média da época
+    # ======================================================================
+    # MÉTODO TRAIN MODIFICADO PARA ACEITAR batch_size
+    # ======================================================================
+    def train(self, X_train, y_train, epochs, batch_size=None):
+        """
+        Treina a rede neural.
+        
+        Parâmetros:
+        - X_train, y_train: Dados de treinamento
+        - epochs: Número de épocas
+        - batch_size: Tamanho do lote.
+            - Se None (Padrão): Usa Batch Gradient Descent (batch_size = N)
+            - Se 1: Usa Stochastic Gradient Descent
+            - Se > 1: Usa Mini-Batch Gradient Descent
+        """
+        history = []
         n_samples = len(X_train)
         
+        # Define o tamanho do batch
+        # Se batch_size não for fornecido, o padrão é BGD
+        if batch_size is None:
+            batch_size = n_samples
+            
         for epoch in range(epochs):
-            # Acumulador para a perda da época
             epoch_loss = 0
-
-            # Embaralha os dados e rótulos juntos
+            
+            # Embaralha os dados a cada época (bom para SGD e MBGD)
             permutation = np.random.permutation(n_samples)
             X_train_shuffled = X_train[permutation]
             y_train_shuffled = y_train[permutation]
             
-            # Loop interno que itera sobre cada amostra individual
-            for i in range(n_samples):                
-                # Pega a amostra 'i'
-                # Usamos slicing [i:i+1] para manter o formato 2D (ex: (1, 2))
-                x_i = X_train[i:i+1]
-                y_i = y_train[i:i+1]
+            # -----------------------------------------------------------------
+            # NOVO: Loop de Mini-Batch
+            # Itera sobre os dados em "pedaços" (batches)
+            # -----------------------------------------------------------------
+            for i in range(0, n_samples, batch_size):
+                # Define o início e o fim do batch atual
+                end = i + batch_size
+                x_batch = X_train_shuffled[i:end]
+                y_batch = y_train_shuffled[i:end]
+
+                # 1. Forward Pass (para UM batch)
+                y_pred_batch = self.predict(x_batch)
                 
-                # 1. Forward Pass (para UMA amostra)
-                y_pred_i = self.predict(x_i)
+                # 2. Calcular a Perda (Loss) (para UM batch)
+                # O MSE já é uma média, então ponderamos pelo tamanho do batch
+                loss = self.loss_func.forward(y_pred_batch, y_batch)
+                epoch_loss += loss * len(x_batch)
                 
-                # 2. Calcular a Perda (Loss) (para UMA amostra)
-                loss = self.loss_func.forward(y_pred_i, y_i)
-                epoch_loss += loss
+                # 3. Backward Pass (Backpropagation) (para UM batch)
                 
-                # 3. Backward Pass (Backpropagation) (para UMA amostra)
+                # Gradiente inicial da perda
+                gradient = self.loss_func.backward(y_pred_batch, y_batch)
                 
-                # Gradiente inicial da perda (para UMA amostra)
-                gradient = self.loss_func.backward(y_pred_i, y_i)
-                
-                # Propaga o gradiente para trás
-                # O otimizador será chamado DENTRO de cada 'layer.backward'
-                # e os pesos serão atualizados a cada chamada.
+                # Propaga o gradiente e atualiza os pesos
                 for layer in reversed(self.layers):
                     gradient = layer.backward(gradient, self.optimizer)
             
-            # Calcula a perda média da época e armazena no histórico
+            # Fim do loop dos batches
+            # -----------------------------------------------------------------
+            
+            # Calcula a perda média da época
             average_epoch_loss = epoch_loss / n_samples
             history.append(average_epoch_loss)
             

@@ -18,4 +18,5 @@ class MSE(Loss):
     def backward(self, y_pred, y_true):
         # TODO: Calcular a derivada do MSE
         # Dica: 2 * (y_pred - y_true) / np.size(y_true)
-        return 2 * (y_pred - y_true) / np.size(y_true)
+        # return 2 * (y_pred - y_true) / np.size(y_true)
+        return 2 * (y_pred - y_true)
