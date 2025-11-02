@@ -13,19 +13,15 @@ class Layer:
 class DenseLayer(Layer):
     def __init__(self, input_size, output_size, activation: Activation):
         self.activation = activation
-        # TODO: Inicializar pesos e bias (ex: com np.random.randn)
         self.weights = np.random.randn(input_size, output_size) * 0.01
         self.bias = np.full((1, output_size), 0.01)
     
     def forward(self, input_data):
         self.input = input_data
-        # TODO: Calcular a saída Z = (X.W + b)
         self.z = np.dot(self.input, self.weights) + self.bias
-        # TODO: Aplicar a função de ativação (A = g(Z))
         return self.activation.forward(self.z)
 
     def backward(self, output_gradient, optimizer):
-        # TODO: Aplicar a derivada da função de ativação
         activation_gradient = self.activation.backward(output_gradient)
 
         # Calcule os gradientes MÉDIOS dividindo pelo N (tamanho do batch)        
@@ -34,10 +30,8 @@ class DenseLayer(Layer):
         self.grad_weights = np.dot(self.input.T, activation_gradient) / n_samples
         self.grad_bias = np.mean(activation_gradient, axis=0, keepdims=True)
         
-        # TODO: Calcular o gradiente a ser passado para a camada anterior
         input_gradient = np.dot(activation_gradient, self.weights.T)
         
-        # TODO: Usar o otimizador para atualizar os pesos
         optimizer.update_params(self)
 
         return input_gradient

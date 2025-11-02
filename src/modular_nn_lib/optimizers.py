@@ -11,6 +11,5 @@ class SGD(Optimizer):
         self.learning_rate = learning_rate
     
     def update_params(self, layer):
-        # TODO: Implementar a atualização de pesos do GD
         layer.weights -= self.learning_rate * layer.grad_weights
         layer.bias -= self.learning_rate * layer.grad_bias
